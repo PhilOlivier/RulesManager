@@ -1,0 +1,96 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Rule for Cursor.io - Internal Tool
+
+## Tech Stack
+- Next.js with React
+- TypeScript for type safety
+- shadcn/ui for UI components
+- Supabase for database and authentication
+- API integrations with external systems
+
+### Backend Options (as needed)
+- Python with FastAPI for data transformation and specialized processing
+  - Use FastAPI for performance and automatic OpenAPI documentation
+  - Leverage Python's data manipulation libraries (pandas, etc.) as needed
+  - Utilize Python's rich ecosystem for parsing and linting functionality
+- Next.js API routes for simpler backend operations
+- Supabase Edge Functions for basic serverless operations
+
+## Code Style & Architecture
+
+### General Frontend
+- Use TypeScript with appropriate typing (avoid `any` when possible)
+- Keep files under 300 lines of code
+- Use absolute imports
+- Organize code for readability over perfect structure
+
+### Frontend Components
+- Build components from shadcn/ui primitives when possible
+- Focus on functionality over perfect component composition
+- Use React.memo, useCallback, and useMemo only when needed for performance
+- Prefer server components where they simplify development
+
+### Python Backend (if implemented)
+- Follow PEP 8 style guidelines
+- Use type hints throughout the codebase
+- Organize routes logically by feature
+- Keep business logic in separate service classes/modules
+- Use consistent error handling patterns
+- Leverage asyncio for asynchronous operations
+
+### API & Data
+- Structure API calls in dedicated service files
+- Use environment variables for configurable values
+- Implement proper error handling for API connections
+- Define clear interfaces between frontend and backend
+- Document data transformation processes
+
+## Testing Requirements
+- Focus on testing critical business logic
+- Write tests for complex utility functions and data transformations
+- Test main user flows rather than aiming for complete coverage
+- Use pytest for Python backend testing
+- Mock external services in tests
+
+## Documentation Standards
+- Include comments for complex functions and business logic
+- Document component props for non-obvious components
+- Create a clear README with setup instructions
+- Document API integration details
+- Document all environment variables
+- If using Python backend, document endpoints and expected request/response formats
+- Document data transformation logic
+
+## File Organization
+- Group related functionality together
+- Keep file structure flat where possible
+- Use consistent naming conventions
+- Store tests alongside the code they test
+- For Python backend, use a package-based organization
+
+## Performance Considerations
+- Focus on developer productivity over micro-optimizations
+- Implement basic code splitting for larger feature sets
+- Consider user experience for main operations
+- For data processing, balance memory usage with processing speed
+
+## Supabase Integration
+- Define clear database schema
+- Implement basic security measures
+- Use typed database responses when possible
+- Consider Supabase functions for simple data operations
+
+## Development Workflow
+- Write descriptive commit messages
+- Ensure code is reviewable
+- Test functionality before deployment
+- If using separate Python backend, document local setup process
