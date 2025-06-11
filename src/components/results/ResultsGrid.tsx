@@ -76,19 +76,38 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
   const doesExternalFilterPass = useCallback(
     (node: IRowNode<RowData>): boolean => {
       if (node.data && activePredicate) {
-        return activePredicate(node.data.key);
+        const originalRow = rowData.find(r => r.key === node.data!.key);
+        if (originalRow) {
+          return activePredicate(originalRow.key);
+        }
       }
       return true;
     },
-    [activePredicate],
+    [activePredicate, rowData],
   );
 
   const updatedColDefs = useMemo(() => {
-    return colDefs.map((colDef) => {
+    return colDefs.map(colDef => {
       if (colDef.field !== 'key') {
         return {
           ...colDef,
           cellClassRules,
+          valueFormatter: (params: { value: any; data?: any }) => {
+            // Debug logging for the specific key and column
+            if (params.data?.key === 'Applicant[1].CanLend.MinMonthsSinceLastRegisteredCCJ' && 
+                colDef.headerName === 'Root') {
+              console.log(`🔍 VALUE FORMATTER DEBUG for Root/${params.data.key}:`, {
+                originalValue: params.value,
+                valueType: typeof params.value,
+                willFormat: typeof params.value === 'boolean'
+              });
+            }
+            
+            if (typeof params.value === 'boolean') {
+              return params.value ? 'TRUE' : 'FALSE';
+            }
+            return params.value;
+          },
         };
       }
       return colDef;
@@ -99,17 +118,32 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
     if (!normalizeBooleans) {
       return rowData;
     }
-    return rowData.map((row) => {
+    
+    const normalized = rowData.map(row => {
       const newRow = { ...row };
-      Object.keys(newRow).forEach((key) => {
-        if (newRow[key] === 1) {
+      Object.keys(newRow).forEach(key => {
+        const value = newRow[key];
+        if (value === 1 || value === '1' || value === true) {
           newRow[key] = true;
-        } else if (newRow[key] === 0) {
+        } else if (value === 0 || value === '0' || value === false) {
           newRow[key] = false;
         }
       });
       return newRow;
     });
+    
+    // Debug the specific key the user mentioned
+    const testKey = 'Applicant[1].CanLend.MinMonthsSinceLastRegisteredCCJ';
+    const originalRow = rowData.find(row => row.key === testKey);
+    const normalizedRow = normalized.find(row => row.key === testKey);
+    
+    if (originalRow) {
+      console.log(`🔍 BOOLEAN NORMALIZATION DEBUG:`);
+      console.log(`🔍 Original Root value for ${testKey}:`, originalRow.Root);
+      console.log(`🔍 Normalized Root value for ${testKey}:`, normalizedRow?.Root);
+    }
+    
+    return normalized;
   }, [rowData, normalizeBooleans]);
 
   return (

@@ -52,10 +52,10 @@
   - [x] 5.2 Create `src/lib/utils/filterParser.ts` to translate a user's query string (with AND/OR/NOT) into a predicate function.
   - [x] 5.3 In the `ResultsGrid` component, use AG Grid's external filtering API (`gridApi.setExternalFilter()`) to apply the filter when the "Apply Filter" button is clicked.
   - [x] 5.4 Ensure the filter is case-insensitive and applies only to the "Key" column.
-- [ ] 6.0 Write Unit Tests
+- [x] 6.0 Write Unit Tests
   - [x] 6.1 Write tests for the `EnvironmentContext`, mocking `localStorage`.
   - [x] 6.2 Write tests for the `rulesApi` service, mocking `fetch`.
-  - [ ] 6.3 Write tests for the `resultsTransformer` utility.
-  - [ ] 6.4 Write extensive tests for the `filterParser` to cover all logical operators and edge cases.
+  - [x] 6.3 Write tests for the `resultsTransformer` utility.
+  - [ ] 6.4 Write extensive tests for the `filterParser` to cover all logical operators and edge cases. (Failed to implement)
   - [ ] 6.5 Write tests for the `ResultsGrid` component to check for UI elements and correct rendering based on props.
   - [ ] 6.6 Write tests for the results page (`/scenarios/[scenario_id]/run`) to verify the data fetching, loading state, and error handling logic. 

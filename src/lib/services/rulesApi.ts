@@ -3,7 +3,7 @@ import { Scenario } from '@/lib/types/scenario';
 
 // This represents the structure of the API response, where each key
 // is a lender and the value is a dictionary of rule results.
-export type RulesApiResponse = Record<string, Record<string, any>>;
+export type RulesApiResponse = Record<string, any>;
 
 export const runScenario = async (
   scenario: Scenario,
@@ -24,7 +24,13 @@ export const runScenario = async (
     );
   }
 
-  const endpoint = `${apiUrl}/resolve-with-rules-and-journal`;
+  const endpoint = `${apiUrl.replace(/\/$/, '')}/resolve-with-rules-and-journal`;
+  
+  const requestPayload = {
+    job_uuid: '',
+    bank_uuid: '',
+    inbound: scenario.scenario_data,
+  };
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -32,10 +38,7 @@ export const runScenario = async (
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
     },
-    body: JSON.stringify({
-      data: scenario,
-      resolveWithJournal: true,
-    }),
+    body: JSON.stringify(requestPayload),
   });
 
   if (!response.ok) {
@@ -44,5 +47,7 @@ export const runScenario = async (
     );
   }
 
-  return response.json();
+  const responseData = await response.json();
+
+  return responseData;
 }; 

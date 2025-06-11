@@ -20,10 +20,15 @@ const ScenarioResultsPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const { colDefs, rowData } = useMemo(
-    () =>
-      results
-        ? transformResultsForGrid(results)
-        : { colDefs: [], rowData: [] },
+    () => {
+      if (!results) {
+        return { colDefs: [], rowData: [] };
+      }
+      
+      const transformed = transformResultsForGrid(results);
+      
+      return transformed;
+    },
     [results],
   );
 
@@ -84,12 +89,26 @@ const ScenarioResultsPage = () => {
     <div className="container mx-auto p-4">
       {scenario && (
         <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">{scenario.name}</h1>
-          {scenario.description && (
-            <p className="text-lg text-muted-foreground mt-2">
-              {scenario.description}
-            </p>
-          )}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">{scenario.name}</h1>
+              {scenario.description && (
+                <p className="text-lg text-muted-foreground mt-2">
+                  {scenario.description}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground">Environment:</span>
+              <span className={`px-2 py-1 rounded text-sm font-medium ${
+                environment === 'UAT' 
+                  ? 'bg-yellow-100 text-yellow-800' 
+                  : 'bg-green-100 text-green-800'
+              }`}>
+                {environment}
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
