@@ -157,7 +157,11 @@ const ScenarioTable = ({ searchTerm }: ScenarioTableProps) => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem disabled>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        router.push(`/scenarios/${scenario.id}/run`)
+                      }
+                    >
                       <PlayCircle className="mr-2 h-4 w-4" />
                       Run
                     </DropdownMenuItem>

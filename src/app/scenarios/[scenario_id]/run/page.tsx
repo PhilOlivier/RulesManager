@@ -1,0 +1,103 @@
+'use client';
+
+import React, { useEffect, useState, useMemo } from 'react';
+import { useParams } from 'next/navigation';
+import { getScenarioById } from '@/lib/supabase/scenarios';
+import { runScenario, RulesApiResponse } from '@/lib/services/rulesApi';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { Scenario } from '@/lib/types/scenario';
+import { transformResultsForGrid } from '@/lib/utils/resultsTransformer';
+import ResultsGrid from '@/components/results/ResultsGrid';
+
+const ScenarioResultsPage = () => {
+  const params = useParams();
+  const scenarioId = params.scenario_id as string;
+
+  const { environment } = useEnvironment();
+  const [scenario, setScenario] = useState<Scenario | null>(null);
+  const [results, setResults] = useState<RulesApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { colDefs, rowData } = useMemo(
+    () =>
+      results
+        ? transformResultsForGrid(results)
+        : { colDefs: [], rowData: [] },
+    [results],
+  );
+
+  useEffect(() => {
+    const fetchAndRun = async () => {
+      if (!scenarioId) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        setScenario(null);
+        setResults(null);
+
+        const fetchedScenario = await getScenarioById(scenarioId);
+        if (!fetchedScenario) {
+          throw new Error(`Scenario with ID ${scenarioId} not found.`);
+        }
+        setScenario(fetchedScenario);
+
+        if (!fetchedScenario.scenario_data) {
+          throw new Error('Scenario does not contain any data to run.');
+        }
+
+        const apiResults = await runScenario(
+          fetchedScenario,
+          environment,
+        );
+        setResults(apiResults);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAndRun();
+  }, [scenarioId, environment]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold">Running Scenario...</h1>
+        <p>Please wait while the results are being fetched.</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold text-red-600">Error</h1>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      {scenario && (
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">{scenario.name}</h1>
+          {scenario.description && (
+            <p className="text-lg text-muted-foreground mt-2">
+              {scenario.description}
+            </p>
+          )}
+        </div>
+      )}
+
+      {results && <ResultsGrid colDefs={colDefs} rowData={rowData} />}
+    </div>
+  );
+};
+
+export default ScenarioResultsPage;
+
+ 
