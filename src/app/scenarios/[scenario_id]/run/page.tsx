@@ -89,16 +89,14 @@ const ScenarioResultsPage = () => {
     <div className="container mx-auto p-4">
       {scenario && (
         <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">{scenario.name}</h1>
-              {scenario.description && (
-                <p className="text-lg text-muted-foreground mt-2">
-                  {scenario.description}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center space-x-2">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{scenario.name}</h1>
+            {scenario.description && (
+              <p className="text-lg text-muted-foreground mt-2">
+                {scenario.description}
+              </p>
+            )}
+            <div className="flex items-center space-x-2 mt-3">
               <span className="text-sm text-muted-foreground">Environment:</span>
               <span className={`px-2 py-1 rounded text-sm font-medium ${
                 environment === 'UAT' 

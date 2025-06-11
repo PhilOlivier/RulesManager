@@ -22,6 +22,19 @@ import { Switch } from '@/components/ui/switch';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+// Custom styles to enable text selection in AG Grid
+const customStyles = `
+  .ag-theme-balham .ag-cell {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+  }
+  .ag-theme-balham .ag-cell[col-id="key"] {
+    cursor: text !important;
+  }
+`;
+
 interface ResultsGridProps {
   colDefs: ColDef[];
   rowData: RowData[];
@@ -148,11 +161,12 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
 
   return (
     <div className="space-y-4">
+      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
       <div className="flex justify-between items-center p-4 border rounded-md">
         <div className="flex items-center space-x-2">
           <Input
             placeholder="Filter keys... (e.g., 'CanLend' AND 'Residency')"
-            className="w-96"
+            className="w-[48rem]"
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleApplyFilter()}
@@ -181,7 +195,8 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
         style={{
           height: 'calc(100vh - 350px)',
           width: '100%',
-        }}
+          '--ag-cell-text-selection': 'text',
+        } as React.CSSProperties}
       >
         <AgGridReact<RowData>
           columnDefs={updatedColDefs}

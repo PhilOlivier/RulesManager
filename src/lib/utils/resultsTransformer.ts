@@ -38,6 +38,8 @@ export const transformResultsForGrid = (
       pinned: 'left',
       filter: true,
       minWidth: 400,
+      cellStyle: { userSelect: 'text', cursor: 'text' },
+      suppressNavigable: false,
     },
     ...sortedLenders.map(lender => ({
       headerName: lender,

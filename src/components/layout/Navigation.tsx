@@ -2,7 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Menu, SquareKanban } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Menu } from 'lucide-react';
+import Image from 'next/image';
+import QDEXLogo from '@/assets/QDEX logo purple.svg';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -43,26 +46,35 @@ const EnvironmentToggle = () => {
 };
 
 const Navigation = () => {
+  const pathname = usePathname();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center">
+      <div className="container flex h-14 max-w-screen-2xl items-center pl-4">
         <div className="mr-4 hidden md:flex md:flex-1">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <SquareKanban className="h-6 w-6" />
-            <span className="hidden font-bold sm:inline-block">
+            <Image src={QDEXLogo} alt="QDEX Logo" width={24} height={24} />
+            <span className="hidden font-bold text-xl sm:inline-block">
               Rules Builder
             </span>
           </Link>
           <nav className="flex items-center gap-6 text-sm">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="font-semibold text-foreground transition-colors hover:text-foreground/80"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`font-semibold transition-colors hover:text-foreground/80 ${
+                    isActive 
+                      ? 'text-foreground border-b-2 border-primary pb-1' 
+                      : 'text-foreground/60'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
         <div className="hidden md:flex justify-end">
@@ -80,21 +92,28 @@ const Navigation = () => {
               <SheetHeader>
                 <SheetTitle>
                   <Link href="/" className="flex items-center space-x-2">
-                    <SquareKanban className="h-6 w-6" />
-                    <span className="font-bold">Rules Builder</span>
+                    <Image src={QDEXLogo} alt="QDEX Logo" width={24} height={24} />
+                    <span className="font-bold text-xl">Rules Builder</span>
                   </Link>
                 </SheetTitle>
               </SheetHeader>
               <div className="grid gap-4 py-4">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="font-semibold text-foreground transition-colors hover:text-foreground/80"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`font-semibold transition-colors hover:text-foreground/80 ${
+                        isActive 
+                          ? 'text-foreground border-l-2 border-primary pl-2' 
+                          : 'text-foreground/60'
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
                 <div className="pt-4">
                   <EnvironmentToggle />
                 </div>
