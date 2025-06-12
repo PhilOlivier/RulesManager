@@ -80,7 +80,7 @@ const ScenarioTable = ({ searchTerm }: ScenarioTableProps) => {
   const handleDuplicate = async (id: string) => {
     startTransition(async () => {
       const newScenario = await duplicateScenario(id);
-      router.push(`/test-scenarios/${newScenario.id}/edit`);
+      router.push(`/protected-routes/test-scenarios/${newScenario.id}/edit`);
     });
   };
 
@@ -159,7 +159,7 @@ const ScenarioTable = ({ searchTerm }: ScenarioTableProps) => {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem
                       onClick={() =>
-                        router.push(`/scenarios/${scenario.id}/run`)
+                        router.push(`/protected-routes/scenarios/${scenario.id}/run`)
                       }
                     >
                       <PlayCircle className="mr-2 h-4 w-4" />
@@ -167,7 +167,7 @@ const ScenarioTable = ({ searchTerm }: ScenarioTableProps) => {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href={`/test-scenarios/${scenario.id}/edit`}>
+                      <Link href={`/protected-routes/test-scenarios/${scenario.id}/edit`}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
                       </Link>

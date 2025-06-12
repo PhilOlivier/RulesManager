@@ -71,7 +71,7 @@ describe('ScenarioTable', () => {
 
     await waitFor(() => {
       expect(mockedScenarioFns.duplicateScenario).toHaveBeenCalledWith('1');
-      expect(mockRouterPush).toHaveBeenCalledWith('/test-scenarios/3/edit');
+      expect(mockRouterPush).toHaveBeenCalledWith('/protected-routes/test-scenarios/3/edit');
     });
   });
 

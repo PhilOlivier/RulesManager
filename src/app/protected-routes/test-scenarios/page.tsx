@@ -21,7 +21,7 @@ const TestScenariosPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-64"
           />
-          <Link href="/test-scenarios/create" passHref>
+          <Link href="/protected-routes/test-scenarios/create" passHref>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
               Create New Scenario

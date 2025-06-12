@@ -9,7 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 const CreateScenarioPage = () => {
   return (
     <div>
-      <Link href="/test-scenarios" passHref>
+      <Link href="/protected-routes/test-scenarios" passHref>
         <Button variant="outline" className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Return to Scenario List

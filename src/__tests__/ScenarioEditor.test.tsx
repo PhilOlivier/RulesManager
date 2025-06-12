@@ -131,7 +131,7 @@ describe('ScenarioEditor', () => {
             expect(mockedScenarioFns.createScenario).toHaveBeenCalledWith(
                 expect.objectContaining({ name: 'A brand new scenario', author: mockUser.id })
             );
-            expect(mockRouterReplace).toHaveBeenCalledWith('/test-scenarios/new-id/edit');
+            expect(mockRouterReplace).toHaveBeenCalledWith('/protected-routes/test-scenarios/new-id/edit');
         });
         jest.useRealTimers();
     });

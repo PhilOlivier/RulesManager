@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   
   // Get redirect_to parameter
-  let redirect_to = searchParams.get('redirect_to') ?? '/test-scenarios'
+  let redirect_to = searchParams.get('redirect_to') ?? '/protected-routes/test-scenarios'
   console.log('Initial redirect_to value:', redirect_to)
   
   // Replace root URL or auth callback with /test-scenarios
@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
       redirect_to === 'https://localhost:3000' || 
       redirect_to === '/' || 
       redirect_to.includes('/auth/callback')) {
-    console.log('Replacing default redirect with /test-scenarios')
-    redirect_to = '/test-scenarios'
+    console.log('Replacing default redirect with /protected-routes/test-scenarios')
+    redirect_to = '/protected-routes/test-scenarios'
   }
   
   console.log('Final redirect_to value:', redirect_to)

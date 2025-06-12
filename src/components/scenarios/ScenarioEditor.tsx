@@ -111,7 +111,7 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
       };
       createScenario(payload).then((newScenario) => {
         setScenarioId(newScenario.id);
-        router.replace(`/test-scenarios/${newScenario.id}/edit`);
+        router.replace(`/protected-routes/test-scenarios/${newScenario.id}/edit`);
       }).catch(error => {
         // Make the error visible to the user
         console.error("Failed to create scenario:", error);
