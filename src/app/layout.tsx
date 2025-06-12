@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Layout from "@/components/layout/Layout";
 import { cn } from "@/lib/utils";
 import { EnvironmentProvider } from "@/contexts/EnvironmentContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -37,7 +36,7 @@ export default function RootLayout({
       >
         <EnvironmentProvider>
           <AuthProvider>
-            <Layout>{children}</Layout>
+            {children}
           </AuthProvider>
         </EnvironmentProvider>
       </body>
