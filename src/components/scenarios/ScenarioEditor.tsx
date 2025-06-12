@@ -23,8 +23,6 @@ import { Scenario } from '@/lib/types/scenario';
 import { createScenario, updateScenario } from '@/lib/supabase/scenarios';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '@/lib/supabaseClient';
-import { User } from '@supabase/supabase-js';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -49,7 +47,6 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
   const [description, setDescription] = useState(
     initialScenario?.description || ''
   );
-  const [user, setUser] = useState<User | null>(null);
   const [rowData, setRowData] = useState<RowData[]>(
     initialScenario?.scenario_data
       ? Object.entries(initialScenario.scenario_data).map(([key, value]) => ({
@@ -64,14 +61,6 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
   );
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const isFirstRun = useRef(true);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-    };
-    fetchUser();
-  }, []);
 
   const handleAddRow = useCallback(() => {
     setRowData((prev) => [...prev, { id: uuidv4(), key: '', value: '' }]);
@@ -115,15 +104,10 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
       };
       updateScenario(scenarioId, payload);
     } else {
-      if (!user) {
-        alert('You must be logged in to create a scenario.');
-        return;
-      }
       const payload = {
         name: currentName,
         description,
         scenario_data: scenarioData,
-        author: user.id,
       };
       createScenario(payload).then((newScenario) => {
         setScenarioId(newScenario.id);
@@ -134,7 +118,7 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
         alert(`Failed to create scenario: ${error.message}`);
       });
     }
-  }, [name, description, rowData, scenarioId, router, user]);
+  }, [name, description, rowData, scenarioId, router]);
   
   const debouncedSave = useCallback(() => {
     if (debounceTimeout.current) {

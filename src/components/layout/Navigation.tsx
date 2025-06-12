@@ -17,6 +17,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { href: '/test-scenarios', label: 'Scenarios' },
@@ -47,6 +48,7 @@ const EnvironmentToggle = () => {
 
 const Navigation = () => {
   const pathname = usePathname();
+  const { user, signOut, loading } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -77,8 +79,13 @@ const Navigation = () => {
             })}
           </nav>
         </div>
-        <div className="hidden md:flex justify-end">
+        <div className="hidden md:flex items-center justify-end gap-4">
           <EnvironmentToggle />
+          {user && (
+            <Button variant="outline" size="sm" onClick={signOut} disabled={loading}>
+              Logout
+            </Button>
+          )}
         </div>
         <div className="flex flex-1 items-center justify-end md:hidden">
           <Sheet>
@@ -117,6 +124,19 @@ const Navigation = () => {
                 <div className="pt-4">
                   <EnvironmentToggle />
                 </div>
+                {user && (
+                  <div className="pt-4">
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      size="sm"
+                      onClick={signOut}
+                      disabled={loading}
+                    >
+                      Logout
+                    </Button>
+                  </div>
+                )}
               </div>
             </SheetContent>
           </Sheet>
