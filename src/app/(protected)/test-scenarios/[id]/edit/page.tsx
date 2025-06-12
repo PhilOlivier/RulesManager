@@ -6,13 +6,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
-interface EditScenarioPageProps {
-  params: {
-    id: string;
-  };
-}
+// Remove the interface completely
 
-const EditScenarioPage = async ({ params }: EditScenarioPageProps) => {
+// Just use the params directly in the component
+export default async function EditScenarioPage({ 
+  params 
+}: { 
+  params: { id: string } 
+}) {
   const scenario = await getScenarioById(params.id);
 
   if (!scenario) {
@@ -32,5 +33,3 @@ const EditScenarioPage = async ({ params }: EditScenarioPageProps) => {
     </div>
   );
 };
-
-export default EditScenarioPage; 
