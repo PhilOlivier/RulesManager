@@ -20,10 +20,10 @@ import { useEnvironment } from '@/contexts/EnvironmentContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
-  { href: '/test-scenarios', label: 'Scenarios' },
-  { href: '/lender-settings', label: 'Lender Settings' },
-  { href: '/rules', label: 'Rules' },
-  { href: '/results', label: 'Results' },
+  { href: '/protected-routes/test-scenarios', label: 'Scenarios' },
+  { href: '/protected-routes/lender-settings', label: 'Lender Settings' },
+  { href: '/protected-routes/rules', label: 'Rules' },
+  { href: '/protected-routes/results', label: 'Results' },
 ];
 
 const EnvironmentToggle = () => {
