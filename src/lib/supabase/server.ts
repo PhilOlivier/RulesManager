@@ -14,8 +14,19 @@ export async function createClient() {
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value, ...options })
+            // Ensure we're setting cookies with the right options
+            cookieStore.set({ 
+              name, 
+              value, 
+              ...options,
+              // Make sure cookies work across your entire site
+              path: '/',
+              // Ensure secure settings
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax'
+            })
           } catch (error) {
+            console.error('Error setting cookie:', error)
             // The `set` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
@@ -23,8 +34,16 @@ export async function createClient() {
         },
         remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: '', ...options })
+            cookieStore.set({ 
+              name, 
+              value: '', 
+              ...options,
+              // Make sure cookies are removed across your entire site  
+              path: '/',
+              maxAge: 0 
+            })
           } catch (error) {
+            console.error('Error removing cookie:', error)
             // The `delete` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
@@ -33,4 +52,4 @@ export async function createClient() {
       },
     }
   )
-} 
+}

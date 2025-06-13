@@ -1,14 +1,10 @@
+// components/AuthCheck.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import Layout from '@/components/layout/Layout';
 
-export default function ProtectedRoutesLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export function AuthCheck({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -44,6 +40,5 @@ export default function ProtectedRoutesLayout({
     return null; // Will redirect in useEffect
   }
 
-  // If authenticated, render the layout and children
-  return <Layout>{children}</Layout>;
+  return <>{children}</>;
 }
