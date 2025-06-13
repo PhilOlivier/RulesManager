@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Image from 'next/image';
 import LoginForm from '@/components/auth/LoginForm';
 import QDEXLogo from '@/assets/QDEX logo purple.svg';
 import { useSearchParams } from 'next/navigation';
 
-const LoginPage = () => {
+// Create a component for the login content that uses useSearchParams
+function LoginContent() {
   const searchParams = useSearchParams();
   const errorType = searchParams.get('error');
 
@@ -50,8 +51,34 @@ const LoginPage = () => {
         )}
         
         <LoginForm />
+        
+        {/* Add link to alternative login */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Having trouble with magic links?{' '}
+            <a href="/direct-access/temp-login" className="text-blue-600 hover:underline">
+              Try password login
+            </a>
+          </p>
+        </div>
       </div>
     </div>
+  );
+}
+
+// Main page component with Suspense
+const LoginPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 };
 
