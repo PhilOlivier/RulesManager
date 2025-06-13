@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { getScenarioById } from '@/lib/supabase/scenarios';
-import { runScenario, RulesApiResponse } from '@/lib/services/rulesApi';
+import { runScenario, ScenarioResult } from '@/lib/services/rulesApi'; // Updated import
 import { useEnvironment } from '@/contexts/EnvironmentContext';
 import { Scenario } from '@/lib/types/scenario';
 import { transformResultsForGrid } from '@/lib/utils/resultsTransformer';
@@ -15,7 +15,8 @@ const ScenarioResultsPage = () => {
 
   const { environment } = useEnvironment();
   const [scenario, setScenario] = useState<Scenario | null>(null);
-  const [results, setResults] = useState<RulesApiResponse | null>(null);
+  const [results, setResults] = useState(null);
+  const [jobUuid, setJobUuid] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +33,13 @@ const ScenarioResultsPage = () => {
     [results],
   );
 
+  const copyJobUuidToClipboard = () => {
+    if (jobUuid) {
+      navigator.clipboard.writeText(jobUuid);
+      // Optionally add some visual feedback like a toast notification
+    }
+  };
+
   useEffect(() => {
     const fetchAndRun = async () => {
       if (!scenarioId) return;
@@ -41,6 +49,7 @@ const ScenarioResultsPage = () => {
         setError(null);
         setScenario(null);
         setResults(null);
+        setJobUuid(null);
 
         const fetchedScenario = await getScenarioById(scenarioId);
         if (!fetchedScenario) {
@@ -52,11 +61,12 @@ const ScenarioResultsPage = () => {
           throw new Error('Scenario does not contain any data to run.');
         }
 
-        const apiResults = await runScenario(
+        const { job_uuid, response } = await runScenario(
           fetchedScenario,
           environment,
         );
-        setResults(apiResults);
+        setJobUuid(job_uuid);
+        setResults(response);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -106,6 +116,23 @@ const ScenarioResultsPage = () => {
                 {environment}
               </span>
             </div>
+            
+            {/* Job UUID Display */}
+            {jobUuid && (
+              <div className="mt-3 flex items-center">
+                <span className="text-sm text-muted-foreground mr-2">Job UUID:</span>
+                <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
+                  {jobUuid}
+                </code>
+                <button
+                  onClick={copyJobUuidToClipboard}
+                  className="ml-2 p-1 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded"
+                  title="Copy to clipboard"
+                >
+                  Copy
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -116,5 +143,3 @@ const ScenarioResultsPage = () => {
 };
 
 export default ScenarioResultsPage;
-
- 
