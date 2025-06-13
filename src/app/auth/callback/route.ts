@@ -19,12 +19,13 @@ export async function GET(request: NextRequest) {
   console.log('Initial redirect_to value:', redirect_to)
   
   // Replace root URL or auth callback with /test-scenarios
-  if (redirect_to === 'http://localhost:3000' || 
-      redirect_to === 'https://localhost:3000' || 
-      redirect_to === '/' || 
-      redirect_to.includes('/auth/callback')) {
-    console.log('Replacing default redirect with /protected-routes/test-scenarios')
-    redirect_to = '/protected-routes/test-scenarios'
+  // Check if redirect_to is a root URL or auth callback
+  if (redirect_to === '/' || 
+    redirect_to.endsWith('://localhost:3000') || 
+    new URL(redirect_to).pathname === '/' ||
+    redirect_to.includes('/auth/callback')) {
+  console.log('Replacing default redirect with /protected-routes/test-scenarios')
+  redirect_to = '/protected-routes/test-scenarios'
   }
   
   console.log('Final redirect_to value:', redirect_to)
