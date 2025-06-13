@@ -13,6 +13,11 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
   const code = searchParams.get('code')
+
+  // Add this at the top of your GET function in route.ts
+  console.log('================ AUTH CALLBACK TRIGGERED ================')
+  console.log('Full callback URL:', href)
+  console.log('All parameters:', Object.fromEntries(searchParams.entries()))
   
   // Get redirect_to parameter
   let redirect_to = searchParams.get('redirect_to') ?? '/protected-routes/test-scenarios'
