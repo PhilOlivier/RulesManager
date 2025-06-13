@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 export async function GET(request: NextRequest) {
   const { searchParams, href } = new URL(request.url)
   
+  console.log('================ AUTH CALLBACK TRIGGERED ================')
   console.log('Full callback URL:', href)
   console.log('All parameters:', Object.fromEntries(searchParams.entries()))
   
@@ -13,30 +14,39 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
   const code = searchParams.get('code')
-
-  // Add this at the top of your GET function in route.ts
-  console.log('================ AUTH CALLBACK TRIGGERED ================')
-  console.log('Full callback URL:', href)
-  console.log('All parameters:', Object.fromEntries(searchParams.entries()))
   
   // Get redirect_to parameter
   let redirect_to = searchParams.get('redirect_to') ?? '/protected-routes/test-scenarios'
   console.log('Initial redirect_to value:', redirect_to)
   
-  // Replace root URL or auth callback with /test-scenarios
-  // Check if redirect_to is a root URL or auth callback
+  // Safer handling of redirect_to parameter
   if (redirect_to === '/' || 
-    redirect_to.endsWith('://localhost:3000') || 
-    new URL(redirect_to).pathname === '/' ||
-    redirect_to.includes('/auth/callback')) {
-  console.log('Replacing default redirect with /protected-routes/test-scenarios')
-  redirect_to = '/protected-routes/test-scenarios'
+      redirect_to.includes('localhost:3000') || 
+      redirect_to.includes('/auth/callback')) {
+    console.log('Replacing default redirect with /protected-routes/test-scenarios')
+    redirect_to = '/protected-routes/test-scenarios'
+  } else {
+    // Check if it's a full URL or just a path
+    try {
+      const url = new URL(redirect_to);
+      // If it's a URL and points to the root path
+      if (url.pathname === '/') {
+        console.log('URL points to root path, redirecting to /protected-routes/test-scenarios');
+        redirect_to = '/protected-routes/test-scenarios';
+      }
+    } catch (e) {
+      // Not a valid URL, assume it's a path and leave it as is
+      console.log('redirect_to is not a valid URL, treating as path:', redirect_to);
+    }
   }
   
   console.log('Final redirect_to value:', redirect_to)
   
   const supabase = await createClient()
   let authError = null
+  
+  // Add logging before authentication
+  console.log('About to authenticate with params:', { token_hash, type, code });
   
   // First try token_hash flow
   if (token_hash && type) {
@@ -59,11 +69,13 @@ export async function GET(request: NextRequest) {
     return redirect('/login?error=missing_parameters')
   }
   
+  // Enhanced logging after authentication
   if (!authError) {
-    console.log('Authentication successful, redirecting to:', redirect_to)
-    return redirect(redirect_to)
+    console.log('Authentication successful, redirecting to:', redirect_to);
+    return redirect(redirect_to);
+  } else {
+    console.error('Authentication failed:', authError);
+    console.error('Error details:', JSON.stringify(authError));
+    return redirect('/login?error=auth_failed');
   }
-  
-  console.error('Authentication failed:', authError)
-  return redirect('/login?error=auth_failed')
 }
