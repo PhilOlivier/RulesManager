@@ -5,12 +5,10 @@ import { AgGridReact } from 'ag-grid-react';
 import {
   ColDef,
   ICellRendererParams,
-  GridReadyEvent,
-  GridApi,
+  FirstDataRenderedEvent,
   CellValueChangedEvent,
   ModuleRegistry,
   AllCommunityModule,
-  FirstDataRenderedEvent,
 } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-balham.css';
@@ -26,10 +24,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+// Strictly typed interface - value is ALWAYS string
 interface RowData {
-  id: string; // Client-side unique ID
+  id: string;
   key: string;
-  value: any;
+  value: string;
 }
 
 interface ScenarioEditorProps {
@@ -47,21 +46,42 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
   const [description, setDescription] = useState(
     initialScenario?.description || ''
   );
-  const [rowData, setRowData] = useState<RowData[]>(
-    initialScenario?.scenario_data
-      ? Object.entries(initialScenario.scenario_data).map(([key, value]) => ({
-          id: uuidv4(),
-          key,
-          value:
-            typeof value === 'object' && value !== null
-              ? JSON.stringify(value, null, 2)
-              : value,
-        }))
-      : [{ id: uuidv4(), key: '', value: '' }]
-  );
+  
+  // Helper function to ensure value is always a string
+  const ensureString = (value: any): string => {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch (e) {
+        console.warn('Failed to stringify object', e);
+        return '';
+      }
+    }
+    
+    // Force string conversion for everything else
+    return String(value);
+  };
+  
+  // Initialize rowData with stringified values
+  const [rowData, setRowData] = useState<RowData[]>(() => {
+    if (!initialScenario?.scenario_data) {
+      return [{ id: uuidv4(), key: '', value: '' }];
+    }
+    
+    return Object.entries(initialScenario.scenario_data).map(([key, value]) => ({
+      id: uuidv4(),
+      key,
+      value: ensureString(value)
+    }));
+  });
+  
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const isFirstRun = useRef(true);
-
+  
   const handleAddRow = useCallback(() => {
     setRowData((prev) => [...prev, { id: uuidv4(), key: '', value: '' }]);
   }, []);
@@ -70,63 +90,71 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
     setRowData((prev) => prev.filter((row) => row.id !== idToDelete));
   }, []);
 
+  // Strictly enforce string values when cell changes
   const onCellValueChanged = useCallback((event: CellValueChangedEvent<RowData>) => {
-    const { data } = event;
-    setRowData((prev) => [...prev.map((row) => (row.id === data.id ? data : row))]);
+    if (!event.data) return;
+    
+    // Always ensure the value is a string, no matter what
+    if (event.colDef.field === 'value') {
+      event.data.value = ensureString(event.data.value);
+    }
+    
+    setRowData((prev) => 
+      prev.map((row) => (row.id === event.data.id ? event.data : row))
+    );
   }, []);
   
+  // Simple save function - everything is stored as strings
   const handleSave = useCallback(() => {
-    const currentName = name;
-    if (!currentName) {
+    if (!name) {
+      console.log('Name is required');
       return;
     }
 
+    // Create a clean object with string values
     const scenarioData = rowData.reduce((acc, row) => {
       if (row.key) {
-        let parsedValue = row.value;
-        if (typeof parsedValue === 'string') {
-          try {
-            parsedValue = JSON.parse(parsedValue);
-          } catch (e) {
-            // Not a valid JSON string, so we keep it as a string
-          }
-        }
-        acc[row.key] = parsedValue;
+        // Always use the string value directly
+        acc[row.key] = row.value;
       }
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, string>);
 
     if (scenarioId) {
       const payload = {
-        name: currentName,
+        name,
         description,
         scenario_data: scenarioData,
       };
+      console.log('Saving with payload:', payload);
       updateScenario(scenarioId, payload);
     } else {
       const payload = {
-        name: currentName,
+        name,
         description,
         scenario_data: scenarioData,
       };
-      createScenario(payload).then((newScenario) => {
-        setScenarioId(newScenario.id);
-        router.replace(`/protected-routes/test-scenarios/${newScenario.id}/edit`);
-      }).catch(error => {
-        // Make the error visible to the user
-        console.error("Failed to create scenario:", error);
-        alert(`Failed to create scenario: ${error.message}`);
-      });
+      createScenario(payload)
+        .then((newScenario) => {
+          setScenarioId(newScenario.id);
+          router.replace(`/protected-routes/test-scenarios/${newScenario.id}/edit`);
+        })
+        .catch(error => {
+          console.error("Failed to create scenario:", error);
+          alert(`Failed to create scenario: ${error.message}`);
+        });
     }
   }, [name, description, rowData, scenarioId, router]);
   
+  // Debounced save with longer timeout
   const debouncedSave = useCallback(() => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
     }
+    
     debounceTimeout.current = setTimeout(() => {
       handleSave();
-    }, 400);
+    }, 1000); // 1 second debounce
   }, [handleSave]);
 
   useEffect(() => {
@@ -134,9 +162,17 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
       isFirstRun.current = false;
       return;
     }
+    
     debouncedSave();
+    
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
   }, [name, description, rowData, debouncedSave]);
   
+  // Simplified column definitions with strict string handling
   const colDefs = useMemo<ColDef<RowData>[]>(() => {
     const ActionCellRenderer = (props: ICellRendererParams<RowData>) => {
       const handleDelete = () => {
@@ -146,29 +182,34 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
       };
       return (
         <div className="flex items-center justify-center h-full">
-            <Button variant="ghost" size="icon" onClick={handleDelete}>
+          <Button variant="ghost" size="icon" onClick={handleDelete}>
             <Trash className="h-4 w-4 text-red-500" />
             <span className="sr-only">Delete</span>
-            </Button>
+          </Button>
         </div>
       );
     };
 
     return [
-      { headerName: 'Key', field: 'key', editable: true, flex: 1 },
+      { 
+        headerName: 'Key', 
+        field: 'key', 
+        editable: true, 
+        flex: 1,
+      },
       {
         headerName: 'Value',
         field: 'value',
         editable: true,
         flex: 1,
-        // Force string type handling
+        // ALWAYS force string type for display
         valueFormatter: (params) => {
-           return params.value !== undefined && params.value !== null ? String(params.value) : '';
+          return params.value !== undefined ? params.value : '';
         },
-        // Ensure values are stored as strings
+        // ALWAYS force string type when setting value
         valueSetter: (params) => {
-           params.data[params.colDef.field] = params.newValue !== undefined ? String(params.newValue) : null;
-           return true;
+          params.data[params.colDef.field] = ensureString(params.newValue);
+          return true;
         },
         cellEditor: 'agTextCellEditor',
       },
@@ -214,10 +255,13 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
       </div>
 
       <div>
-        <div className="mb-4">
+        <div className="mb-4 flex gap-2">
           <Button onClick={handleAddRow}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Row
+          </Button>
+          <Button onClick={handleSave} variant="secondary">
+            Save Now
           </Button>
         </div>
         <div
@@ -241,4 +285,4 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
   );
 };
 
-export default ScenarioEditor; 
+export default ScenarioEditor;
