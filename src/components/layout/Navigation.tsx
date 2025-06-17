@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
 import Image from 'next/image';
-import QDEXLogo from '@/assets/QDEX logo purple.svg';
+import QDEXLogo from '@/assets/QDEX-logo-purple.svg';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,

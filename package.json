@@ -20,6 +20,7 @@
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.0",
+    "@tanstack/react-table": "^8.21.3",
     "ag-grid-community": "^33.3.2",
     "ag-grid-react": "^33.3.2",
     "class-variance-authority": "^0.7.1",

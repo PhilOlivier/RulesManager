@@ -11,7 +11,7 @@ import ResultsGrid from '@/components/results/ResultsGrid';
 
 const ScenarioResultsPage = () => {
   const params = useParams();
-  const scenarioId = params.scenario_id as string;
+  const scenarioId = params.id as string;
 
   const { environment } = useEnvironment();
   const [scenario, setScenario] = useState<Scenario | null>(null);

@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react';
 import Image from 'next/image';
 import LoginForm from '@/components/auth/LoginForm';
-import QDEXLogo from '@/assets/QDEX logo purple.svg';
+import QDEXLogo from '@/assets/QDEX-logo-purple.svg';
 import { useSearchParams } from 'next/navigation';
 
 // Create a component for the login content that uses useSearchParams
