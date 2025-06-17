@@ -126,7 +126,7 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
     }
     debounceTimeout.current = setTimeout(() => {
       handleSave();
-    }, 750);
+    }, 400);
   }, [handleSave]);
 
   useEffect(() => {
@@ -161,8 +161,16 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
         field: 'value',
         editable: true,
         flex: 1,
-        cellEditor: 'agLargeTextCellEditor',
-        cellEditorPopup: true,
+        // Force string type handling
+        valueFormatter: (params) => {
+           return params.value !== undefined && params.value !== null ? String(params.value) : '';
+        },
+        // Ensure values are stored as strings
+        valueSetter: (params) => {
+           params.data[params.colDef.field] = params.newValue !== undefined ? String(params.newValue) : null;
+           return true;
+        },
+        cellEditor: 'agTextCellEditor',
       },
       {
         headerName: 'Action',
