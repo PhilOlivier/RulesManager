@@ -4,7 +4,10 @@ import { Scenario } from '../types/scenario';
 export const getAllScenarios = async (
   searchTerm?: string
 ): Promise<Scenario[]> => {
-  let query = supabase.from('test_scenarios').select('*');
+  let query = supabase
+    .from('test_scenarios')
+    .select('*')
+    .order('updated_at', { ascending: false });
 
   if (searchTerm) {
     // Use 'or' to search in multiple columns.
@@ -51,14 +54,17 @@ export const createScenario = async (
     .from('test_scenarios')
     .insert([{ ...scenarioData, created_at: timestamp, updated_at: timestamp }])
     .select()
-    .single();
 
   if (error) {
     console.error('Error creating scenario:', error);
     throw new Error(error.message);
   }
 
-  return data;
+  if (!data || data.length === 0) {
+    throw new Error('Failed to create scenario: No data returned after insert. This might be an RLS issue.');
+  }
+
+  return data[0];
 };
 
 export const updateScenario = async (
@@ -70,14 +76,17 @@ export const updateScenario = async (
     .update({ ...scenarioData, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
-    .single();
 
   if (error) {
     console.error(`Error updating scenario with id ${id}:`, error);
     throw new Error(error.message);
   }
+  
+  if (!data || data.length === 0) {
+    throw new Error('Failed to update scenario: Row not found or permission denied by RLS.');
+  }
 
-  return data;
+  return data[0];
 };
 
 export const deleteScenario = async (id: string): Promise<void> => {

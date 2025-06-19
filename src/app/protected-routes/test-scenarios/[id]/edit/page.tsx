@@ -1,23 +1,68 @@
-import React from 'react';
-import { notFound } from 'next/navigation';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { notFound, useParams } from 'next/navigation';
 import { getScenarioById } from '@/lib/supabase/scenarios';
 import ScenarioEditor from '@/components/scenarios/ScenarioEditor';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Scenario } from '@/lib/types/scenario';
 
-// Remove the interface completely
+export default function EditScenarioPage() {
+  const { id } = useParams<{ id: string }>();
+  const { user, loading: authLoading } = useAuth();
+  const [scenario, setScenario] = useState<Scenario | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-// Just use the params directly in the component
-export default async function EditScenarioPage({ 
-  params 
-}: { 
-  params: { id: string } 
-}) {
-  const scenario = await getScenarioById(params.id);
+  useEffect(() => {
+    if (authLoading) {
+      return; // Wait for authentication to resolve
+    }
+    if (!user) {
+      // This case should ideally be handled by route protection,
+      // but as a fallback, we prevent fetching.
+      setLoading(false);
+      return;
+    }
 
+    const fetchScenario = async () => {
+      try {
+        setLoading(true);
+        const fetchedScenario = await getScenarioById(id);
+        if (!fetchedScenario) {
+          setError('Scenario not found.');
+          notFound();
+        } else {
+          setScenario(fetchedScenario);
+        }
+      } catch (e) {
+        if (e instanceof Error) {
+            setError(`Failed to fetch scenario: ${e.message}`);
+        } else {
+            setError('An unknown error occurred.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchScenario();
+  }, [id, user, authLoading]);
+
+  if (loading || authLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+  
   if (!scenario) {
-    notFound();
+    // This can happen if the user is not authenticated or scenario not found
+    return <div>Scenario could not be loaded.</div>
   }
 
   return (
@@ -29,7 +74,7 @@ export default async function EditScenarioPage({
         </Button>
       </Link>
       <a
-        href={`/protected-routes/scenarios/${params.id}/run`}
+        href={`/protected-routes/scenarios/${id}/run`}
         target="_blank"
         rel="noopener noreferrer"
       >

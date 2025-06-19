@@ -46,6 +46,8 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
   const [description, setDescription] = useState(
     initialScenario?.description || ''
   );
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   
   // Helper function to ensure value is always a string
   const ensureString = (value: any): string => {
@@ -105,11 +107,14 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
   }, []);
   
   // Simple save function - everything is stored as strings
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!name) {
       console.log('Name is required');
       return;
     }
+
+    setIsSaving(true);
+    setSaveError(null);
 
     // Create a clean object with string values
     const scenarioData = rowData.reduce((acc, row) => {
@@ -120,29 +125,28 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
       return acc;
     }, {} as Record<string, string>);
 
-    if (scenarioId) {
-      const payload = {
-        name,
-        description,
-        scenario_data: scenarioData,
-      };
-      console.log('Saving with payload:', payload);
-      updateScenario(scenarioId, payload);
-    } else {
-      const payload = {
-        name,
-        description,
-        scenario_data: scenarioData,
-      };
-      createScenario(payload)
-        .then((newScenario) => {
-          setScenarioId(newScenario.id);
-          router.replace(`/protected-routes/test-scenarios/${newScenario.id}/edit`);
-        })
-        .catch(error => {
-          console.error("Failed to create scenario:", error);
-          alert(`Failed to create scenario: ${error.message}`);
-        });
+    const payload = {
+      name,
+      description,
+      scenario_data: scenarioData,
+    };
+
+    try {
+      if (scenarioId) {
+        console.log('Updating scenario with payload:', payload);
+        await updateScenario(scenarioId, payload);
+      } else {
+        console.log('Creating scenario with payload:', payload);
+        const newScenario = await createScenario(payload);
+        setScenarioId(newScenario.id);
+        router.replace(`/protected-routes/test-scenarios/${newScenario.id}/edit`);
+      }
+    } catch (error) {
+      console.error('Failed to save scenario:', error);
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      setSaveError(message);
+    } finally {
+      setIsSaving(false);
     }
   }, [name, description, rowData, scenarioId, router]);
   
@@ -208,7 +212,9 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
         },
         // ALWAYS force string type when setting value
         valueSetter: (params) => {
-          params.data[params.colDef.field] = ensureString(params.newValue);
+          if (params.colDef.field) {
+            params.data[params.colDef.field] = ensureString(params.newValue);
+          }
           return true;
         },
         cellEditor: 'agTextCellEditor',
@@ -260,10 +266,11 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Row
           </Button>
-          <Button onClick={handleSave} variant="secondary">
-            Save Now
+          <Button onClick={handleSave} variant="secondary" disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save Now'}
           </Button>
         </div>
+        {saveError && <p className="text-sm text-red-500 mb-2">Could not save changes: {saveError}</p>}
         <div
           className="ag-theme-balham"
           style={{
