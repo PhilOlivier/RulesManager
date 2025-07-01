@@ -12,8 +12,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { RuleGridRow, RuleType } from '@/lib/types/rules';
-import { upsertRule } from '@/lib/services/rulesManager';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { RuleGridRow, RuleType, RuleCategory } from '@/lib/types/rules';
+import { upsertRule, getRuleCategories } from '@/lib/services/rulesManager';
 
 interface MetadataPanelProps {
   isOpen: boolean;
@@ -32,7 +39,26 @@ const MetadataPanel: React.FC<MetadataPanelProps> = ({
   const [category, setCategory] = useState<string>('');
   const [type, setType] = useState<RuleType>('Rule');
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [categories, setCategories] = useState<RuleCategory[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState<boolean>(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load categories when component mounts
+  useEffect(() => {
+    const loadCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const categoriesData = await getRuleCategories();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error('Failed to load rule categories:', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   // Update local state when selectedRule changes
   useEffect(() => {
@@ -92,7 +118,9 @@ const MetadataPanel: React.FC<MetadataPanelProps> = ({
 
   // Handle category change with debounced auto-save
   const handleCategoryChange = useCallback((value: string) => {
-    setCategory(value);
+    // Handle the special empty value
+    const actualValue = value === '__EMPTY__' ? '' : value;
+    setCategory(actualValue);
     
     // Clear existing timeout
     if (debounceTimeoutRef.current) {
@@ -101,7 +129,7 @@ const MetadataPanel: React.FC<MetadataPanelProps> = ({
 
     // Set new timeout for auto-save (400ms debounce)
     debounceTimeoutRef.current = setTimeout(() => {
-      autoSaveRule({ category: value || null });
+      autoSaveRule({ category: actualValue || null });
     }, 400);
   }, [autoSaveRule]);
 
@@ -171,18 +199,31 @@ const MetadataPanel: React.FC<MetadataPanelProps> = ({
             />
           </div>
 
-          {/* Category Input (Editable) */}
+          {/* Category Select (Editable) */}
           <div className="space-y-2">
             <Label htmlFor="category" className="text-sm font-medium">
               Category
             </Label>
-            <Input
-              id="category"
-              placeholder="Enter a category (e.g., Lending, Validation, etc.)"
-              value={category}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              disabled={isSaving}
-            />
+            <Select
+              value={category || '__EMPTY__'}
+              onValueChange={handleCategoryChange}
+              disabled={isSaving || loadingCategories}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category"} />
+              </SelectTrigger>
+              <SelectContent>
+                {/* Empty option to allow clearing the category */}
+                <SelectItem value="__EMPTY__">
+                  <span className="text-muted-foreground italic">No category</span>
+                </SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.category}>
+                    {cat.category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Type Selector (Rule/Constant) */}

@@ -28,6 +28,14 @@ export interface Lender {
   updated_at: string;
 }
 
+export interface RuleCategory {
+  id: string;
+  category: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface RuleGridRow extends Rule {
   [lender: string]: string | number | boolean | null | RuleType;
 } 

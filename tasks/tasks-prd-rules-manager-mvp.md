@@ -8,11 +8,11 @@ This document breaks down the work required to implement the Rules Manager MVP, 
 - `src/app/protected-routes/rules/page.test.tsx` - Tests for the new Rules Manager page.
 - `src/components/layout/Navigation.tsx` - The main navigation bar where the "Rules" link will be added.
 - `src/components/rules/RulesManager.tsx` - The main Rules Manager component with filtering controls, grid integration, and metadata panel with auto-saving.
-- `src/components/rules/RulesManagerGrid.tsx` - The main component containing the AG Grid with info icon column for opening metadata panel.
+- `src/components/rules/RulesManagerGrid.tsx` - The main component containing the AG Grid with info icon column and lender column remove icons.
 - `src/components/rules/RulesManagerGrid.test.tsx` - Tests for the `RulesManagerGrid` component.
 - `src/components/rules/MetadataPanel.tsx` - The slide-out panel for editing rule metadata with auto-saving to database.
 - `src/components/rules/MetadataPanel.test.tsx` - Tests for the `MetadataPanel` component.
-- `src/components/rules/AddLenderModal.tsx` - Modal for adding new lender columns.
+- `src/components/rules/AddLenderModal.tsx` - Modal for adding new lender columns with validation for dot notation format.
 - `src/lib/services/rulesManager.ts` - Service file for all Supabase and API interactions related to rules.
 - `src/lib/services/rulesManager.test.ts` - Tests for the rules manager service.
 - `src/lib/utils/filterParser.ts` - Utility for parsing complex filter queries with boolean logic.
@@ -63,18 +63,18 @@ This document breaks down the work required to implement the Rules Manager MVP, 
   - [x] 3.3 Add info icon column to the grid that opens the metadata panel for the selected row
   - [x] 3.4 Implement auto-saving from the metadata panel to the `rules` table
 
-- [ ] **Phase 4: Lender Management**
-  - [ ] 4.1 Create the `src/components/rules/AddLenderModal.tsx` component
-  - [ ] 4.2 Add UI controls for lender management:
-    - [ ] 4.2.1 "Add Lender" button that opens the modal
-    - [ ] 4.2.2 Context menu or icon for removing lenders
-  - [ ] 4.3 Implement lender validation:
-    - [ ] 4.3.1 Validate lender name format (dot notation)
-    - [ ] 4.3.2 Validate that parent lenders exist
-  - [ ] 4.4 Implement lender operations:
-    - [ ] 4.4.1 Function to add a new lender column to the grid
-    - [ ] 4.4.2 Function to remove a lender column with confirmation
-    - [ ] 4.4.3 Update the grid to reflect added/removed lenders
+- [x] **Phase 4: Lender Management**
+  - [x] 4.1 Create the `src/components/rules/AddLenderModal.tsx` component
+  - [x] 4.2 Add UI controls for lender management:
+    - [x] 4.2.1 "Add Lender" button that opens the modal
+    - [x] 4.2.2 Context menu or icon for removing lenders
+  - [x] 4.3 Implement lender validation:
+    - [x] 4.3.1 Validate lender name format (dot notation)
+    - [x] 4.3.2 Validate that parent lenders exist
+  - [x] 4.4 Implement lender operations:
+    - [x] 4.4.1 Function to add a new lender column to the grid
+    - [x] 4.4.2 Function to remove a lender column with confirmation
+    - [x] 4.4.3 Update the grid to reflect added/removed lenders
 
 - [ ] **Phase 5: API Upload Functionality**
   - [ ] 5.1 Implement inheritance resolution:
