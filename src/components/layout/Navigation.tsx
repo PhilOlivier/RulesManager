@@ -21,9 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { href: '/protected-routes/test-scenarios', label: 'Scenarios' },
-  { href: '/protected-routes/lender-settings', label: 'Lender Settings' },
   { href: '/protected-routes/rules', label: 'Rules' },
-  { href: '/protected-routes/results', label: 'Results' },
 ];
 
 const EnvironmentToggle = () => {
