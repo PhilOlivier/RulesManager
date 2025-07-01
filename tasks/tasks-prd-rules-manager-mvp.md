@@ -7,10 +7,10 @@ This document breaks down the work required to implement the Rules Manager MVP, 
 - `src/app/protected-routes/rules/page.tsx` - The new page that will host the Rules Manager grid.
 - `src/app/protected-routes/rules/page.test.tsx` - Tests for the new Rules Manager page.
 - `src/components/layout/Navigation.tsx` - The main navigation bar where the "Rules" link will be added.
-- `src/components/rules/RulesManager.tsx` - The main Rules Manager component with filtering controls and grid integration.
-- `src/components/rules/RulesManagerGrid.tsx` - The main component containing the AG Grid and its controls.
+- `src/components/rules/RulesManager.tsx` - The main Rules Manager component with filtering controls, grid integration, and metadata panel with auto-saving.
+- `src/components/rules/RulesManagerGrid.tsx` - The main component containing the AG Grid with info icon column for opening metadata panel.
 - `src/components/rules/RulesManagerGrid.test.tsx` - Tests for the `RulesManagerGrid` component.
-- `src/components/rules/MetadataPanel.tsx` - The slide-out panel for editing rule metadata.
+- `src/components/rules/MetadataPanel.tsx` - The slide-out panel for editing rule metadata with auto-saving to database.
 - `src/components/rules/MetadataPanel.test.tsx` - Tests for the `MetadataPanel` component.
 - `src/components/rules/AddLenderModal.tsx` - Modal for adding new lender columns.
 - `src/lib/services/rulesManager.ts` - Service file for all Supabase and API interactions related to rules.
@@ -38,7 +38,7 @@ This document breaks down the work required to implement the Rules Manager MVP, 
     - [x] 1.4.4 Function to insert/update a rule in the `rules` table
     - [x] 1.4.5 Function to insert/update/delete a value in the `lender_values` table
 
-- [ ] **Phase 2: Core Grid Implementation**
+- [x] **Phase 2: Core Grid Implementation**
   - [x] 2.1 Create the `src/components/rules/RulesManagerGrid.tsx` component with:
     - [x] 2.1.1 Basic AG Grid setup with pinned Key column
     - [x] 2.1.2 Data loading from Supabase via the rules manager service
@@ -48,20 +48,20 @@ This document breaks down the work required to implement the Rules Manager MVP, 
     - [x] 2.2.2 Add debounced save function (400ms) triggered by `onCellValueChanged`
     - [x] 2.2.3 Implement `valueFormatter` and `valueSetter` for data type handling
     - [x] 2.2.4 Add `suppressConvertCellToNumber: true` to grid options
-  - [ ] 2.3 Add basic filtering:
+  - [x] 2.3 Add basic filtering:
     - [x] 2.3.1 Text input for key-based filtering
-    - [ ] 2.3.2 Radio buttons for type-based filtering (All, Rules, Constants)
+    - [x] 2.3.2 Radio buttons for type-based filtering (All, Rules, Constants)
     - [x] 2.3.3 Display for showing filtered row count vs. total row count
 
-- [ ] **Phase 3: Metadata Management**
-  - [ ] 3.1 Create the `src/components/rules/MetadataPanel.tsx` component using `shadcn/ui` `Sheet`
-  - [ ] 3.2 Implement fields in the metadata panel:
-    - [ ] 3.2.1 Read-only key display
-    - [ ] 3.2.2 Editable description textarea
-    - [ ] 3.2.3 Editable category input
-    - [ ] 3.2.4 Type selector (Rule/Constant)
-  - [ ] 3.3 Add info icon column to the grid that opens the metadata panel for the selected row
-  - [ ] 3.4 Implement auto-saving from the metadata panel to the `rules` table
+- [x] **Phase 3: Metadata Management**
+  - [x] 3.1 Create the `src/components/rules/MetadataPanel.tsx` component using `shadcn/ui` `Sheet`
+  - [x] 3.2 Implement fields in the metadata panel:
+    - [x] 3.2.1 Read-only key display
+    - [x] 3.2.2 Editable description textarea
+    - [x] 3.2.3 Editable category input
+    - [x] 3.2.4 Type selector (Rule/Constant)
+  - [x] 3.3 Add info icon column to the grid that opens the metadata panel for the selected row
+  - [x] 3.4 Implement auto-saving from the metadata panel to the `rules` table
 
 - [ ] **Phase 4: Lender Management**
   - [ ] 4.1 Create the `src/components/rules/AddLenderModal.tsx` component

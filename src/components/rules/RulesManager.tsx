@@ -2,8 +2,11 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import RulesManagerGrid from '@/components/rules/RulesManagerGrid';
+import MetadataPanel from '@/components/rules/MetadataPanel';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   getRules,
   getLenderValues,
@@ -12,9 +15,11 @@ import {
   upsertLenderValue,
   deleteLenderValue,
 } from '@/lib/services/rulesManager';
-import { RuleGridRow, Lender } from '@/lib/types/rules';
+import { RuleGridRow, Lender, RuleType } from '@/lib/types/rules';
 import { CellValueChangedEvent, GridApi, GridReadyEvent, ModelUpdatedEvent, IRowNode } from 'ag-grid-community';
 import { createQueryPredicate } from '@/lib/utils/filterParser';
+
+type TypeFilter = 'All' | 'Rule' | 'Constant';
 
 const RulesManager = () => {
   const [rowData, setRowData] = useState<RuleGridRow[]>([]);
@@ -22,11 +27,16 @@ const RulesManager = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterText, setFilterText] = useState<string>('');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('All');
   const [activePredicate, setActivePredicate] = useState<
     ((key: string) => boolean) | null
   >(null);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [displayedRowCount, setDisplayedRowCount] = useState(0);
+  
+  // Metadata panel state
+  const [isMetadataPanelOpen, setIsMetadataPanelOpen] = useState(false);
+  const [selectedRule, setSelectedRule] = useState<RuleGridRow | null>(null);
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -48,26 +58,64 @@ const RulesManager = () => {
 
   const handleResetFilter = useCallback(() => {
     setFilterText('');
+    setTypeFilter('All');
     setActivePredicate(null);
   }, []);
 
-  // Effect to apply the filter when the predicate changes
+  // Handle opening metadata panel
+  const handleOpenMetadata = useCallback((rule: RuleGridRow) => {
+    setSelectedRule(rule);
+    setIsMetadataPanelOpen(true);
+  }, []);
+
+  // Handle closing metadata panel
+  const handleCloseMetadata = useCallback((open: boolean) => {
+    setIsMetadataPanelOpen(open);
+    if (!open) {
+      setSelectedRule(null);
+    }
+  }, []);
+
+  // Handle rule metadata updates
+  const handleRuleUpdate = useCallback((updatedRule: RuleGridRow) => {
+    setRowData(prevData =>
+      prevData.map(row =>
+        row.id === updatedRule.id ? updatedRule : row
+      )
+    );
+    // Also update the selectedRule if it's the same rule
+    if (selectedRule && selectedRule.id === updatedRule.id) {
+      setSelectedRule(updatedRule);
+    }
+  }, [selectedRule]);
+
+  // Effect to apply the filter when the predicate or type filter changes
   useEffect(() => {
     gridApi?.onFilterChanged();
-  }, [activePredicate, gridApi]);
+  }, [activePredicate, typeFilter, gridApi]);
 
   const isExternalFilterPresent = useCallback((): boolean => {
-    return activePredicate != null;
-  }, [activePredicate]);
+    return activePredicate != null || typeFilter !== 'All';
+  }, [activePredicate, typeFilter]);
 
   const doesExternalFilterPass = useCallback(
     (node: IRowNode<RuleGridRow>): boolean => {
-      if (node.data && activePredicate) {
-        return activePredicate(node.data.key);
+      if (!node.data) return true;
+
+      // Apply text filter
+      const passesTextFilter = !activePredicate || activePredicate(node.data.key);
+      
+      // Apply type filter - handle case mismatch between DB values (lowercase) and filter values (capitalized)
+      let passesTypeFilter = true;
+      if (typeFilter !== 'All') {
+        const dbType = node.data.type?.toLowerCase();
+        const filterType = typeFilter.toLowerCase();
+        passesTypeFilter = dbType === filterType;
       }
-      return true;
+
+      return passesTextFilter && passesTypeFilter;
     },
-    [activePredicate],
+    [activePredicate, typeFilter],
   );
 
   const handleCellValueChange = useCallback(
@@ -156,7 +204,8 @@ const RulesManager = () => {
           );
           // TODO: show a toast notification to the user
         }
-      }, 400);
+      },
+      400);
     },
     [setRowData],
   );
@@ -212,7 +261,7 @@ const RulesManager = () => {
       
       {/* Filter Controls */}
       <div className="flex justify-between items-center p-4 border rounded-md">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-4">
           <Input
             placeholder="Filter keys... (e.g., 'CanLend' AND 'Residency')"
             className="w-[48rem]"
@@ -224,6 +273,29 @@ const RulesManager = () => {
           <Button variant="outline" onClick={handleResetFilter}>
             Reset Filter
           </Button>
+        </div>
+        
+        {/* Type Filter */}
+        <div className="flex items-center space-x-2">
+          <Label className="text-sm font-medium">Type:</Label>
+          <RadioGroup
+            value={typeFilter}
+            onValueChange={(value) => setTypeFilter(value as TypeFilter)}
+            className="flex flex-row space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="All" id="all" />
+              <Label htmlFor="all" className="text-sm">All</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="Rule" id="rules" />
+              <Label htmlFor="rules" className="text-sm">Rules</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="Constant" id="constants" />
+              <Label htmlFor="constants" className="text-sm">Constants</Label>
+            </div>
+          </RadioGroup>
         </div>
       </div>
 
@@ -240,8 +312,17 @@ const RulesManager = () => {
           onModelUpdated={onModelUpdated}
           isExternalFilterPresent={isExternalFilterPresent}
           doesExternalFilterPass={doesExternalFilterPass}
+          onOpenMetadata={handleOpenMetadata}
         />
       </div>
+
+      {/* Metadata Panel */}
+      <MetadataPanel
+        isOpen={isMetadataPanelOpen}
+        onOpenChange={handleCloseMetadata}
+        selectedRule={selectedRule}
+        onRuleUpdate={handleRuleUpdate}
+      />
     </div>
   );
 };
