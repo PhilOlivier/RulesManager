@@ -96,7 +96,7 @@ const Navigation = () => {
             <SheetContent side="right">
               <SheetHeader>
                 <SheetTitle>
-                  <Link href="/" className="flex items-center space-x-2">
+                  <Link href="/protected-routes/test-scenarios" className="flex items-center space-x-2">
                     <Image src={QDEXLogo} alt="QDEX Logo" width={24} height={24} />
                     <span className="font-bold text-xl">Rules Builder</span>
                   </Link>
