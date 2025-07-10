@@ -28,12 +28,12 @@ const EnvironmentToggle = () => {
   const { environment, setEnvironment } = useEnvironment();
 
   const handleToggle = (checked: boolean) => {
-    setEnvironment(checked ? 'UAT' : 'MVP');
+    setEnvironment(checked ? 'UAT' : 'PROD');
   };
 
   return (
     <div className="flex items-center space-x-2">
-      <Label htmlFor="environment-switch">MVP</Label>
+      <Label htmlFor="environment-switch">PROD</Label>
       <Switch
         id="environment-switch"
         checked={environment === 'UAT'}

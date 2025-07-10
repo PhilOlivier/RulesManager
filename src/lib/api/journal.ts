@@ -21,11 +21,11 @@ export const getJournalByJobId = async (
   const isUat = environment === 'UAT';
   const apiUrl = isUat
     ? process.env.NEXT_PUBLIC_UAT_API_URL
-    : process.env.NEXT_PUBLIC_MVP_API_URL;
+    : process.env.NEXT_PUBLIC_PROD_API_URL;
   
   const apiKey = isUat
     ? process.env.NEXT_PUBLIC_UAT_API_KEY
-    : process.env.NEXT_PUBLIC_MVP_API_KEY;
+    : process.env.NEXT_PUBLIC_PROD_API_KEY;
 
   if (!apiUrl || !apiKey) {
     throw new Error(`${environment} API URL or Key is not configured.`);

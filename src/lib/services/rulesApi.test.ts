@@ -26,8 +26,8 @@ describe('rulesApi - runScenario', () => {
     // Set mock env variables for tests
     process.env.NEXT_PUBLIC_UAT_API_URL = 'http://uat.example.com';
     process.env.NEXT_PUBLIC_UAT_API_KEY = 'uat-key';
-    process.env.NEXT_PUBLIC_MVP_API_URL = 'http://mvp.example.com';
-    process.env.NEXT_PUBLIC_MVP_API_KEY = 'mvp-key';
+    process.env.NEXT_PUBLIC_PROD_API_URL = 'http://prod.example.com';
+    process.env.NEXT_PUBLIC_PROD_API_KEY = 'prod-key';
   });
 
   afterAll(() => {
@@ -60,8 +60,8 @@ describe('rulesApi - runScenario', () => {
     );
   });
 
-  it('should call the MVP endpoint with the correct headers and body', async () => {
-    const environment: ApiEnvironment = 'MVP';
+  it('should call the PROD endpoint with the correct headers and body', async () => {
+    const environment: ApiEnvironment = 'PROD';
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ success: true }),
@@ -70,12 +70,12 @@ describe('rulesApi - runScenario', () => {
     await runScenario(mockScenarioData, environment);
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://mvp.example.com/resolve-with-rules-and-journal',
+      'http://prod.example.com/resolve-with-rules-and-journal',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': 'mvp-key',
+          'x-api-key': 'prod-key',
         },
         body: JSON.stringify({
           data: mockScenarioData,
@@ -122,17 +122,17 @@ describe('rulesApi - runScenario', () => {
     );
   });
 
-  it('should throw an error if NEXT_PUBLIC_MVP_API_URL is not set for MVP environment', async () => {
-    delete process.env.NEXT_PUBLIC_MVP_API_URL;
-    await expect(runScenario(mockScenarioData, 'MVP')).rejects.toThrow(
-      'MVP API URL or Key is not configured.',
+  it('should throw an error if NEXT_PUBLIC_PROD_API_URL is not set for PROD environment', async () => {
+    delete process.env.NEXT_PUBLIC_PROD_API_URL;
+    await expect(runScenario(mockScenarioData, 'PROD')).rejects.toThrow(
+      'PROD API URL or Key is not configured.',
     );
   });
 
-  it('should throw an error if NEXT_PUBLIC_MVP_API_KEY is not set for MVP environment', async () => {
-    delete process.env.NEXT_PUBLIC_MVP_API_KEY;
-    await expect(runScenario(mockScenarioData, 'MVP')).rejects.toThrow(
-      'MVP API URL or Key is not configured.',
+  it('should throw an error if NEXT_PUBLIC_PROD_API_KEY is not set for PROD environment', async () => {
+    delete process.env.NEXT_PUBLIC_PROD_API_KEY;
+    await expect(runScenario(mockScenarioData, 'PROD')).rejects.toThrow(
+      'PROD API URL or Key is not configured.',
     );
   });
 }); 

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type ApiEnvironment = 'UAT' | 'MVP';
+export type ApiEnvironment = 'UAT' | 'PROD';
 
 export interface EnvironmentContextType {
   environment: ApiEnvironment;
@@ -29,11 +29,11 @@ export const EnvironmentProvider = ({ children }: EnvironmentProviderProps) => {
   const [environment, setEnvironment] = useState<ApiEnvironment>(() => {
     if (typeof window !== 'undefined') {
       const storedEnv = localStorage.getItem('apiEnvironment');
-      if (storedEnv === 'UAT' || storedEnv === 'MVP') {
+      if (storedEnv === 'UAT' || storedEnv === 'PROD') {
         return storedEnv;
       }
     }
-    return 'MVP'; // Default environment
+    return 'PROD'; // Default environment
   });
 
   useEffect(() => {
