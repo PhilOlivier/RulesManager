@@ -57,7 +57,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
 
 const defaultColDef = useMemo(() => {
   return {
-    minWidth: 400,      // Set minimum width for all columns
+    minWidth: 200,      // Set minimum width for all columns
     resizable: true,   // Keep columns resizable
   };
 }, []);
