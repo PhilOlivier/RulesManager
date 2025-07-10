@@ -55,6 +55,13 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
   const [displayedRowCount, setDisplayedRowCount] = useState(0);
   const [normalizeBooleans, setNormalizeBooleans] = useState(false);
 
+const defaultColDef = useMemo(() => {
+  return {
+    minWidth: 400,      // Set minimum width for all columns
+    resizable: true,   // Keep columns resizable
+  };
+}, []);
+
   const onGridReady = useCallback((params: GridReadyEvent) => {
     setGridApi(params.api);
     params.api.sizeColumnsToFit();
@@ -68,9 +75,40 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
   }, []);
 
   const handleApplyFilter = useCallback(() => {
-    const predicate = createQueryPredicate(filterText);
-    setActivePredicate(() => predicate);
-  }, [filterText]);
+    // Get the original string-based predicate
+    const stringPredicate = createQueryPredicate(filterText);
+    
+    // Create a row-level predicate
+    const rowPredicate = (key: string): boolean => {
+      // First check if the key matches
+      if (stringPredicate(key)) {
+        return true;
+      }
+      
+      // If no match on key, get the full row data
+      const row = rowData.find(r => r.key === key);
+      if (!row) return false;
+      
+      // Then check all other columns
+      for (const colKey in row) {
+        // Skip the key column since we already checked it
+        if (colKey === 'key') continue;
+        
+        const value = row[colKey];
+        // Convert to string for comparison (similar to evaluateTerm in your parser)
+        const valueStr = value !== null && value !== undefined ? String(value) : '';
+        
+        // Use the same predicate on this column value
+        if (stringPredicate(valueStr)) {
+          return true;
+        }
+      }
+      
+      return false;
+    };
+    
+    setActivePredicate(() => rowPredicate);
+  }, [filterText, rowData]);
 
   const handleResetFilter = useCallback(() => {
     setFilterText('');
@@ -89,14 +127,13 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
   const doesExternalFilterPass = useCallback(
     (node: IRowNode<RowData>): boolean => {
       if (node.data && activePredicate) {
-        const originalRow = rowData.find(r => r.key === node.data!.key);
-        if (originalRow) {
-          return activePredicate(originalRow.key);
-        }
+        // We only need to pass the key to our predicate now,
+        // as it will handle finding and checking the row data
+        return activePredicate(node.data.key);
       }
       return true;
     },
-    [activePredicate, rowData],
+    [activePredicate],
   );
 
   const updatedColDefs = useMemo(() => {
@@ -201,6 +238,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
         <AgGridReact<RowData>
           columnDefs={updatedColDefs}
           rowData={normalizedRowData}
+          defaultColDef={defaultColDef}
           onGridReady={onGridReady}
           onModelUpdated={onModelUpdated}
           isExternalFilterPresent={isExternalFilterPresent}

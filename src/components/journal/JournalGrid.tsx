@@ -67,9 +67,40 @@ export const JournalGrid: React.FC<JournalGridProps> = ({ rowData, columnDefs })
   }, []);
 
   const handleApplyFilter = useCallback(() => {
-    const predicate = createQueryPredicate(filterText);
-    setActivePredicate(() => predicate);
-  }, [filterText]);
+    // Get the original string-based predicate
+    const stringPredicate = createQueryPredicate(filterText);
+    
+    // Create a row-level predicate
+    const rowPredicate = (key: string): boolean => {
+      // First check if the key matches
+      if (stringPredicate(key)) {
+        return true;
+      }
+      
+      // If no match on key, find the row with this key
+      const row = rowData.find(r => r.key === key);
+      if (!row) return false;
+      
+      // Then check all other columns
+      for (const colKey in row) {
+        // Skip the key column since we already checked it
+        if (colKey === 'key') continue;
+        
+        const value = row[colKey];
+        // Convert to string for comparison
+        const valueStr = value !== null && value !== undefined ? String(value) : '';
+        
+        // Use the same predicate on this column value
+        if (stringPredicate(valueStr)) {
+          return true;
+        }
+      }
+      
+      return false;
+    };
+    
+    setActivePredicate(() => rowPredicate);
+  }, [filterText, rowData]);
 
   const handleResetFilter = useCallback(() => {
     setFilterText('');
@@ -87,7 +118,6 @@ export const JournalGrid: React.FC<JournalGridProps> = ({ rowData, columnDefs })
   const doesExternalFilterPass = useCallback(
     (node: IRowNode<any>): boolean => {
       if (node.data && activePredicate) {
-        // The journal data structure has the filterable key directly on the row data object.
         return activePredicate(node.data.key);
       }
       return true;
