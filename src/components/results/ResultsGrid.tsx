@@ -22,7 +22,7 @@ import { Switch } from '@/components/ui/switch';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// Custom styles to enable text selection in AG Grid
+// Custom styles to enable text selection in AG Grid and tooltips
 const customStyles = `
   .ag-theme-balham .ag-cell {
     user-select: text !important;
@@ -32,6 +32,25 @@ const customStyles = `
   }
   .ag-theme-balham .ag-cell[col-id="key"] {
     cursor: text !important;
+  }
+  
+  /* Tooltip styling */
+  .ag-tooltip {
+    background-color: white !important;
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    opacity: 1 !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    color: black !important;
+    max-width: 300px !important;
+    word-wrap: break-word !important;
+    z-index: 1000 !important;
+  }
+  
+  .ag-tooltip::before {
+    display: none !important;
   }
 `;
 
@@ -55,12 +74,13 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
   const [displayedRowCount, setDisplayedRowCount] = useState(0);
   const [normalizeBooleans, setNormalizeBooleans] = useState(false);
 
-const defaultColDef = useMemo(() => {
-  return {
-    minWidth: 200,      // Set minimum width for all columns
-    resizable: true,   // Keep columns resizable
-  };
-}, []);
+  const defaultColDef = useMemo(() => {
+    return {
+      minWidth: 200,       // Set minimum width for all columns
+      resizable: true,    // Keep columns resizable
+      tooltipComponent: 'agTooltipComponent', // Use the default tooltip component
+    };
+  }, []);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     setGridApi(params.api);
@@ -138,29 +158,41 @@ const defaultColDef = useMemo(() => {
 
   const updatedColDefs = useMemo(() => {
     return colDefs.map(colDef => {
-      if (colDef.field !== 'key') {
+      if (colDef.field === 'key') {
+        // Add tooltip to the key column
         return {
           ...colDef,
-          cellClassRules,
-          valueFormatter: (params: { value: any; data?: any }) => {
-            // Debug logging for the specific key and column
-            if (params.data?.key === 'Applicant[1].CanLend.MinMonthsSinceLastRegisteredCCJ' && 
-                colDef.headerName === 'Root') {
-              console.log(`🔍 VALUE FORMATTER DEBUG for Root/${params.data.key}:`, {
-                originalValue: params.value,
-                valueType: typeof params.value,
-                willFormat: typeof params.value === 'boolean'
-              });
-            }
-            
-            if (typeof params.value === 'boolean') {
-              return params.value ? 'TRUE' : 'FALSE';
-            }
-            return params.value;
-          },
+          tooltipField: 'key', // Use the key field value as tooltip
         };
       }
-      return colDef;
+      
+      // For all other columns
+      return {
+        ...colDef,
+        cellClassRules,
+        tooltipValueGetter: (params: any) => {
+          if (!params.data) return '';
+          const value = params.value;
+          // Return the value as a string for the tooltip, but only if it has a value
+          return value != null ? String(value) : '';
+        },
+        valueFormatter: (params: { value: any; data?: any }) => {
+          // Debug logging for the specific key and column
+          if (params.data?.key === 'Applicant[1].CanLend.MinMonthsSinceLastRegisteredCCJ' && 
+              colDef.headerName === 'Root') {
+            console.log(`🔍 VALUE FORMATTER DEBUG for Root/${params.data.key}:`, {
+              originalValue: params.value,
+              valueType: typeof params.value,
+              willFormat: typeof params.value === 'boolean'
+            });
+          }
+          
+          if (typeof params.value === 'boolean') {
+            return params.value ? 'TRUE' : 'FALSE';
+          }
+          return params.value;
+        },
+      };
     });
   }, [colDefs]);
 
