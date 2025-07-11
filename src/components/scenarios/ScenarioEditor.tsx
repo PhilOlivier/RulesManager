@@ -24,12 +24,52 @@ import { v4 as uuidv4 } from 'uuid';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// Strictly typed interface - value is ALWAYS string
+// Interface for row data - value is still string in the grid
 interface RowData {
   id: string;
   key: string;
   value: string;
 }
+
+// Function to parse string values to their correct types for storage
+const parseValueToCorrectType = (value: string): any => {
+  // Handle empty strings
+  if (value === "") {
+    return "";
+  }
+  
+  // Handle numbers - check if it's a valid number and doesn't start with 0 (unless it's 0.x)
+  if (/^-?\d+(\.\d+)?$/.test(value) && 
+      (value === "0" || !value.startsWith("0") || value.startsWith("0."))) {
+    return Number(value);
+  }
+  
+  // Handle booleans
+  if (value.toLowerCase() === "true") return true;
+  if (value.toLowerCase() === "false") return false;
+  
+  // Date strings and other strings remain as strings
+  return value;
+};
+
+// Function to ensure values are displayed as strings in the grid
+const ensureString = (value: any): string => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch (e) {
+      console.warn('Failed to stringify object', e);
+      return '';
+    }
+  }
+  
+  // Force string conversion for everything else
+  return String(value);
+};
 
 interface ScenarioEditorProps {
   scenario?: Scenario;
@@ -48,25 +88,6 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
   );
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  
-  // Helper function to ensure value is always a string
-  const ensureString = (value: any): string => {
-    if (value === null || value === undefined) {
-      return '';
-    }
-    
-    if (typeof value === 'object') {
-      try {
-        return JSON.stringify(value);
-      } catch (e) {
-        console.warn('Failed to stringify object', e);
-        return '';
-      }
-    }
-    
-    // Force string conversion for everything else
-    return String(value);
-  };
   
   // Initialize rowData with stringified values
   const [rowData, setRowData] = useState<RowData[]>(() => {
@@ -96,7 +117,7 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
   const onCellValueChanged = useCallback((event: CellValueChangedEvent<RowData>) => {
     if (!event.data) return;
     
-    // Always ensure the value is a string, no matter what
+    // Always ensure the value is a string in the grid
     if (event.colDef.field === 'value') {
       event.data.value = ensureString(event.data.value);
     }
@@ -106,7 +127,7 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
     );
   }, []);
   
-  // Simple save function - everything is stored as strings
+  // Save function that converts values to their correct types
   const handleSave = useCallback(async () => {
     if (!name) {
       console.log('Name is required');
@@ -116,14 +137,14 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
     setIsSaving(true);
     setSaveError(null);
 
-    // Create a clean object with string values
+    // Create a clean object with properly typed values
     const scenarioData = rowData.reduce((acc, row) => {
       if (row.key) {
-        // Always use the string value directly
-        acc[row.key] = row.value;
+        // Parse the string value to the correct type before saving
+        acc[row.key] = parseValueToCorrectType(row.value);
       }
       return acc;
-    }, {} as Record<string, string>);
+    }, {} as Record<string, any>);
 
     const payload = {
       name,
@@ -176,7 +197,7 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
     };
   }, [name, description, rowData, debouncedSave]);
   
-  // Simplified column definitions with strict string handling
+  // Column definitions with string handling for display
   const colDefs = useMemo<ColDef<RowData>[]>(() => {
     const ActionCellRenderer = (props: ICellRendererParams<RowData>) => {
       const handleDelete = () => {
@@ -206,11 +227,11 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
         field: 'value',
         editable: true,
         flex: 1,
-        // ALWAYS force string type for display
+        // Always display as string in the grid
         valueFormatter: (params) => {
           return params.value !== undefined ? params.value : '';
         },
-        // ALWAYS force string type when setting value
+        // Always use string for editing in the grid
         valueSetter: (params) => {
           if (params.colDef.field) {
             params.data[params.colDef.field] = ensureString(params.newValue);
