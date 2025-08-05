@@ -139,7 +139,11 @@ export const JournalGrid: React.FC<JournalGridProps> = ({ rowData, columnDefs })
           },
         };
       }
-      return colDef;
+      return {
+        ...colDef,
+        sort: 'asc',
+        sortIndex: 0,
+      };
     });
   }, [columnDefs]);
 

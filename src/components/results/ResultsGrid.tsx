@@ -163,6 +163,8 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ colDefs, rowData }) => {
         return {
           ...colDef,
           tooltipField: 'key', // Use the key field value as tooltip
+          sort: 'asc',
+          sortIndex: 0,
         };
       }
       

@@ -221,6 +221,8 @@ const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
         field: 'key', 
         editable: true, 
         flex: 1,
+        sort: 'asc',
+        sortIndex: 0,
       },
       {
         headerName: 'Value',
